@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="description" content="description"/>
+  <meta name="keywords" content="keywords"/> 
+  <meta name="author" content="author"/> 
+  <link rel="stylesheet" type="text/css" href="/static/simple.css" media="screen"/>
+  <script type="text/javascript" src="/static/jquery.tools.min.js"></script>
+  {% block scripts %}{% endblock %}
+  {% block styles %}{% endblock %}
+  <style type="text/css">
+  #page {
+    position: relative;
+  }
+  #userinfo {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 15px;
+    text-align: right;
+  }
+  #userinfo div {
+    margin-bottom: 2px;
+  }
+  #userinfo span {
+    color: #999;
+    font-weight: bold;
+  }
+  #userinfo a {
+    -moz-border-radius:5px;
+    background-color:#DDDDDD;
+    color:#FFFFFF;
+    display:inline-block;
+    font-size:18px;
+    padding:2px;
+    text-decoration:none;
+  }
+  #userinfo a:hover {
+    color: #00AEEF;
+  }
+  </style>
+  <title>{% block title %}StoreCheck{% endblock %}</title>
+</head>
+
+<body>
+  <div id="page">
+    <div id="header">
+      <h1><a href="/">StoreCheck</a></h1>
+      <div class="slogan">Система збору інформації від дистриб'юторів</div>
+      {% if user.is_authenticated %}
+        <div id="userinfo">
+          <div>Користувач: <span>{{ user }}</span> <a href="/accounts/logout/">Вийти</a></div>
+        {% if user.is_superuser %}
+          <div><a href="/admin/">Керування</a></div>
+          <div><a href="/databrowse/">Перегляд даних</a></div>
+        {% endif %}
+        </div>
+      {% endif %}
+    </div>
+    <div id="content">
+      <div class="post">
+        <h1>{% block heading %}Перевірка торгових точок{% endblock %}</h1>
+        <div class="entry">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+    <div id="footer">
+      <p>Сайт працює на <a href="www.djangoproject.com/">Django</a>. Валідний <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> &amp; <a href="http://validator.w3.org/check?uri=referer">XHTML</a>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <style type="text/css">
+  @font-face {
+    font-family: DejaVuSans;
+    src: url(static/fonts/DejaVuSans.ttf);
+  }
+  /* Bold */
+  @font-face {
+    font-family: DejaVuSans;
+    src: url(static/fonts/DejaVuSans-Bold.ttf);
+    font-weight: bold;
+  }
+  /* Italic */
+  @font-face {
+    font-family: DejaVuSans;
+    src: url(font/DejaVuSans-Oblique.ttf);
+    font-style: italic;
+  }
+  body {
+    font-family: DejaVuSans;
+  }
+  h1, h2, h3 {
+    text-align: center;
+    font-weight: bold;
+  }
+  h2 span {
+    color: red;
+  }
+  p span {
+    font-weight: bold;
+  }
+  div.store {
+    margin-left: 2em;
+  }
+  div.ref {
+    margin-left: 5em;
+  }
+  </style>
+</head>
+<body>
+  <h1>Звіт із перевірки торгових точок</h1>
+  {% for store, refrigerators in stores %}
+  <div class="store">
+    <h2>Торгова точка <span>{{ store.name|title }}</span></h2>
+    <p>Перевірив регіональний менеджер <span>{{ store.storeassignment.user }}</span><p>
+    <p>Фактична адреса: <span>{{ store.address }}</span></p>
+    <p>Юридична адреса: <span>{{ store.legal_address }}</span></p>
+    <p>Наявність фірмового плаката: <span>{{ store.branding|yesno:"є,немає" }}</span></p>
+    <h3>Морозильні камери</h3>
+    {% for ref in refrigerators %}
+      <div class="ref">
+        <p>Серійний номер: <span>{{ ref.serial_number }}</span></p>
+        <p>Кількість корзин: <span>{{ ref.baskets }}</span></p>
+        <p>Викладка: <span>{{ ref.filled|yesno:"є,немає" }}</span></p>
+        <p>Відсоток наповнення: <span>{{ ref.fill_percentage }} %</span></p>
+        <p>Брендування: <span>{{ ref.branding|yesno:"є,немає" }}</span></p>
+        <p>Фірмовий цінник: <span>{{ ref.original_price_list|yesno:"є,немає" }}</span></p>
+        <p>Наклейка із серійним номером: <span>{{ ref.serial_number_sticker|yesno:"є,немає" }}</span></p>
+        <p>Кількість скла: <span>{{ ref.glass_number }}</span></p>
+      </div>
+      <hr />
+    {% endfor %}
+  </div>
+  {% endfor %}
+<div id="footerblock">
+<!--{%block pager %}
+    <pdf:pagenumber>
+{%endblock%}-->
+</div>
+</body>
+</html>

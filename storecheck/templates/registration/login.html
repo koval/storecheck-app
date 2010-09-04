@@ -1,0 +1,75 @@
+{% extends "storecheck/base.html" %}
+
+{% block styles %}
+  <style type="text/css">
+    form {
+      -moz-border-radius: 10px;
+      padding: 20px;
+      background-color: #FAFDFE;
+      border: 1px solid #C9E8F3;
+    }
+    form p {
+      border-bottom: 1px dotted #ccc;
+      margin: 5px;
+      padding-bottom: 5px;
+    }
+    form p span {
+      color: #777777;
+      font-size: 80%;
+      font-style: italic;
+      padding-left: 10px;
+    }
+    form p:last-child {
+      border: none;
+    }
+    input[type="submit"] {
+      margin-left: 153px;
+      width: 185px;
+    }
+    label {
+      width: 130px;
+      display: inline-block;
+      padding: 0 10px;
+    }
+  </style>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  $(document).ready(function (e) {
+    $('#id_username').focus();
+  });
+</script>
+{% endblock %}
+
+{% block heading %}Введіть своє ім'я користувача та пароль для входу у систему{% endblock %}
+
+{% block content %}
+
+{% if form.errors %}
+<p>Невірно введені ім'я та пароль. Будь-ласка спробуйте ще.</p>
+{% endif %}
+
+<form method="post" action="{% url django.contrib.auth.views.login %}">
+  {% csrf_token %}
+  <p>
+    {{ form.username.label_tag }}
+    {{ form.username }}
+    <span>Ім'я користувача, під яким ви зареєстровані у системі.</span>
+  </p>
+  <p>
+    {{ form.password.label_tag }}
+    {{ form.password }}
+    <span>Пароль, який ви використовуєте.</span>
+  </p>
+  <p>
+    <input type="submit" value="Увійти" />
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}" />
+    {% else %}
+      <input type="hidden" name="next" value="/" />
+    {% endif %}
+  </p>
+</form>
+
+{% endblock %}

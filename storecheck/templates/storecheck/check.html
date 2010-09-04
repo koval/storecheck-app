@@ -1,0 +1,268 @@
+{% extends "storecheck/base.html" %}
+{% load webdesign %}
+
+{% block title %}Перевірка торгових точок{% endblock %}
+
+{% block styles %}
+<style type="text/css">
+a:active {
+  outline: none;
+}
+a:focus {
+  -moz-outline-style: none;
+}
+
+#htabs_container ul.htabs {
+  list-style: none;
+  border-bottom: 1px solid #C9E8F3;
+  height: 27px;
+  margin: 0;
+  padding-left: 0px;
+}
+#htabs_container ul.htabs li {
+  float: left;
+}
+
+#htabs_container ul.htabs li a {
+  padding: 3px 10px;
+  display: block;
+  border: 1px solid #C9E8F3;
+  border-bottom: 0;
+  color: #677e70;
+  font-weight: bold;
+  margin-right: 4px;
+  text-decoration: none;
+  background-color: #C9E8F3;
+  -moz-border-radius-topleft: 10px;
+  -moz-border-radius-topright: 10px;
+}
+#htabs_container ul.htabs li.hactive a {
+  background-color: #FAFDFE;
+  padding-top: 4px;
+  color:#2c353a;
+}
+div.htab_contents_container {
+  background-color: #FAFDFE;
+  border: 1px solid #C9E8F3;
+  border-top: none;
+  padding: 20px;
+  padding-bottom: 30px;
+}
+div.htab_contents {
+  display: none;
+}
+div.htab_contents_active {
+  display: block;
+}
+div.clear {
+  clear: both;
+}
+
+/* vertical tabs */
+#vtabs_container ul.vtabs {
+  list-style: none;
+  margin: 0;
+  padding-left: 0px;
+  width: 120px;
+  float: left;
+}
+
+#vtabs_container ul.vtabs li a {
+  padding: 3px 10px 3px 35px;
+  display: block;
+  border: 1px solid #ddd;
+  border-right: none;
+  color: #676868;
+  font-weight: bold;
+  line-height: 30px;
+  text-decoration: none;
+  text-align: center;
+  background-color: #eee;
+  -moz-border-radius-topleft: 7px;
+  -moz-border-radius-bottomleft: 7px;
+}
+#vtabs_container ul.vtabs li.vactive a {
+  background-color: #fff;
+  border-right-color: #fff;
+  border-top: 1px solid #ddd;
+  width: 85px;
+  position: relative;
+  margin-left:-10px;
+}
+#vtabs_container ul.vtabs li.done a {
+  background-image: url("/static/img/Apply.png");
+  background-repeat: no-repeat;
+  background-position: 5%;
+}
+
+div.vtab_contents_container {
+  background-color: white;
+  border: 1px solid #ddd;
+  float: right;
+  padding: 20px;
+  width: 556px;
+}
+div.vtab_contents {
+  display: none;
+}
+div.vtab_contents_active {
+  display: block;
+}
+
+div.buttons {
+  margin-top: 10px;
+  text-align: center;
+}
+div.empty {
+  text-align: center; 
+  font-weight: bold; 
+  font-size: 125%; 
+  color: #3C8BB9;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="/static/jquery.form.js"></script>
+<script type="text/javascript" src="/static/check.js"></script>
+{% endblock %}
+
+{% block heading %}<a href="/">Перевірка торгових точок</a> → <a href="/addresses">Адреси</a> → Торгова точка{% endblock %}
+
+{% block content %}
+<p>
+  На цій сторінці Ви можете перевітити або ввести інформацію про торгову точку 
+  та морозильні камери, що знаходяться у ній. Сторінка поділена на дві головні 
+  частини - "Морозильні камери" та "Торгові точки", кожна з яких містить додаткові
+  розділи. Галочками відмічені закладки, на яких Ви вже перевіряли інформацію.
+</p>
+<p>
+  Кожен розділ містить форму із двома кнопками. Натисність на кнопку "Вірно" для
+  підтвердження інформації або "Виправити" для її коректування. Після коректування
+  клацніть на "Вірно" і ваші зміни будуть записані і ви автоматично перейдете до
+  наступної закладки (сторінки).
+</p>
+<div id="htabs_container">
+  <!-- These are the tabs -->
+  <ul class="htabs">
+    {% if not storetab %}
+    <li class="hactive">
+    {% else %}
+    <li>
+    {% endif %}
+      <a href="#refrigerators" rel="#refrigerators" class="htab">Морозильні камери</a>
+    </li>
+    {% if storetab %}
+    <li class="hactive">
+    {% else %}
+    <li>
+    {% endif %}
+      <a href="#store" rel="#store" class="htab">Торгова точка</a>
+    </li>
+  </ul>
+
+  <!-- This is used so the contents don't appear to the 
+        right of the tabs -->
+  <div class="clear"></div>
+
+  <!-- This is a div that hold all the tabbed contents -->
+  <div class="htab_contents_container">
+    {% if not storetab %}
+    <div id="refrigerators" class="htab_contents htab_contents_active">
+    {% else %}
+    <div id="refrigerators" class="htab_contents">
+    {% endif %}
+      {% if refrigerators %}
+      <div id="vtabs_container">
+        <!-- create vertical tabs -->
+        <ul class="vtabs">
+        {% for serial_number, assignment, form in refrigerators %}
+          {% ifequal serial_number reftab %}
+            {% if assignment.checked %}
+              <li class="vactive done">
+            {% else %}
+              <li class="vactive">
+            {% endif %}
+          {% else %}
+            {% if assignment.checked %}
+              <li class="done">
+            {% else %}
+              <li>
+            {% endif %}
+          {% endifequal %}
+            <a href="#serial{{ serial_number }}" rel="#serial{{ serial_number }}" class="vtab">{{ serial_number }}</a>
+          </li>
+        {% endfor %}
+        </ul>
+        <!-- not create tab contents -->
+        <div class="vtab_contents_container">
+        {% for serial_number, assignment, form in refrigerators %}
+          <!-- first is active -->
+          {% ifequal serial_number reftab %}
+          <div id="serial{{ serial_number }}" class="vtab_contents vtab_contents_active">
+          {% else %}
+          <div id="serial{{ serial_number }}" class="vtab_contents">
+          {% endifequal %}
+            <form action="/check/{{ store.pk }}/" method="post">
+              <input type="hidden" name="refrigerator_pk" value="{{ form.instance.pk }}" />
+              <table>
+                {{ form.as_table }}
+              </table>
+              <div class="buttons">
+                <input type="submit" name="confirm" value="Вірно" />
+                <input type="submit" name="change" value="Виправити" />
+              </div>
+            </form>
+          </div>
+        {% endfor %}
+        </div>
+        <div class="clear"></div>
+      </div>
+      {% else %}
+      <div class="empty">У торговій точці немає морозильних камер.</div>
+      {% endif %}
+    </div>
+
+    {% if storetab %}
+    <div id="store" class="htab_contents htab_contents_active">
+    {% else %}
+    <div id="store" class="htab_contents">
+    {% endif %}
+      <div id="vtabs_container">
+        <ul class="vtabs">
+          {% if store_assignment.checked %}
+            <li class="vactive done">
+          {% else %}
+            <li class="vactive">
+          {% endif %}
+            <a href="#information" rel="#information" class="vtab">Інформація</a>
+          </li>
+<!--          <li><a href="#assortment" rel="#assortment" class="vtab">Асортимент</a></li>
+          <li><a href="#competitors" rel="#competitors" class="vtab">Конкуренти</a></li>-->
+        </ul>
+        <div class="vtab_contents_container">
+          <div id="information" class="vtab_contents vtab_contents_active">
+            <form action="/check/{{ store.pk }}/" method="post">
+              <table>
+                {{ store_form.as_table }}
+              </table>
+              <div class="buttons">
+                <input type="submit" name="confirm" value="Вірно" />
+                <input type="submit" name="change" value="Виправити" />
+              </div>
+            </form>
+          </div>
+          <div id="assortment" class="vtab_contents">
+            {% lorem 3 p %}
+          </div>
+          <div id="competitors" class="vtab_contents">
+            {% lorem 3 p %}
+          </div>
+        </div>
+        <div class="clear"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

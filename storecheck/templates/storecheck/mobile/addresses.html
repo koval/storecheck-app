@@ -1,0 +1,29 @@
+{% ifequal query.type "serial" %}
+<ul>
+{% for assignment, ref in refrigerators %}
+  {% if assignment.checked %}
+  <li class="checked">
+  {% else %}
+  <li>
+  {% endif %}
+    <a class="digg-count"></a>
+    <a href="/m/check/{{ ref.store.pk }}">{{ ref.serial_number }} - {{ ref.store.address }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% endifequal %}
+
+{% ifequal query.type "location" %}
+<ul class="addresses">
+{% for assignment, store in stores %}
+  {% if assignment.checked %}
+  <li class="checked">
+  {% else %}
+  <li>
+  {% endif %}
+    <a class="digg-count"></a>
+    <a href="/m/check/{{ store.pk }}">{{ store.name }} - {{ store.address }}</a>
+  </li>
+{% endfor %}
+</ul>
+{% endifequal %}

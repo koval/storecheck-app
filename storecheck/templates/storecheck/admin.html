@@ -1,0 +1,365 @@
+{% extends "storecheck/base.html" %}
+
+{% block title %}Перевірка торгових точок{% endblock %}
+
+{% block styles %}
+<style type="text/css">
+div.address {
+  text-transform: none;
+  font-size: 75%;
+}
+.assigned {
+  background-color: #EBF1F7;
+}
+.checked {
+  background-color: #C3F68D;
+}
+.new {
+  background-color: #F47B60;
+}
+div.legend {
+  text-align: center;
+  margin-top: 10px;
+}
+.legend span {
+  margin-right: 3px;
+  display: inline-block;
+  line-height: 30px;
+  padding: 3px 5px;
+  -moz-border-radius: 10px;
+}
+tr.editable td:hover {
+  cursor: pointer;
+  background-color: #F5A28F;
+}
+div.save {
+  display: none;
+  color: #fff;
+  background-color: #FCA103;
+  margin: 0 10px;
+  padding: 10px;
+  -moz-border-radius-bottomleft: 15px;
+  -moz-border-radius-bottomright: 15px;
+  text-align: center;
+  font-weigh: bold;
+  font-size: 150%;
+  cursor: pointer;
+}
+div.reports {
+  display: none;
+  color: #fff;
+  background-color: green;
+  margin: 0 40px 10px;
+  padding: 10px;
+  -moz-border-radius-bottomleft: 15px;
+  -moz-border-radius-bottomright: 15px;
+  text-align: center;
+  font-weigh: bold;
+  font-size: 150%;
+  cursor: pointer;
+}
+div.storeinfo {
+  position: relative;
+}
+div.storeinfo:hover {
+  color: red;
+}
+
+div.actions {
+  position: absolute;
+  top: 3px;
+  left: -3px;
+}
+
+div.actions a {
+  height: 34px;
+  width: 34px;
+  display: block;
+  opacity: 0.5;
+  float: left;
+  position: absolute;
+}
+div.actions a:hover {
+  opacity: 1.0;
+}
+a.reset {
+  background: url("/static/img/reset.png") no-repeat center;
+}
+a.report {
+  margin-left: 37px;
+  background: url("/static/img/print.png") no-repeat center;
+}
+div.progress {
+  border-right: 1px solid #ccc;
+  height: 50px;
+}
+#assignments td {
+  padding: 0px;
+}
+#assignments thead th {
+  padding: 5px;
+  text-transform: none;
+}
+.note {
+  font-weight: bold;
+}
+#accordion {
+  margin-left: 0 40px 20px;
+}
+#accordion h3 {
+  cursor: pointer;
+}
+#accordion h3 span {
+  font-weight: normal;
+  font-size: 80%;
+  font-style: italic;
+}
+#accordion h3.active {
+  padding: 5px 5px 5px 15px;
+  background: url("/static/img/highlight.gif");
+}
+#accordion h3.active span {
+  display: none;
+}
+#accordion p {
+  border-left: 3px solid #666666;
+  margin-left: 10px;
+  padding-left:10px;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  $(document).ready(function (e) {
+    var changes = [];
+    var reports = [];
+
+    function removeChange(first, second) {
+      if (second === undefined) {
+        changes = changes.filter(function (e) {
+          return e[0] !== first;
+        });
+      } else {
+        changes = changes.filter(function (e) {
+          return e[0] !== first || e[1] !== second;
+        });
+      }
+    }
+
+    function removeReport(store) {
+      reports = reports.filter(function (e) {
+        return e !== store;
+      });
+    }
+
+    function assignStore(e) {
+      e = $(this);
+      if (e.hasClass('assigned')) {
+        return;
+      }
+      var store = e.parent().attr('id');
+      var user = e.attr('id');
+      if (e.hasClass('new')) {
+        e.removeClass('new');
+        removeChange(store);
+      } else {
+        var siblings = e.siblings('td.new');
+        if (siblings.length !== 0) {
+          siblings.removeClass('new');
+          removeChange(store);
+        }
+        e.addClass('new');
+        changes.push([store, user])
+      }
+      if (changes.length !== 0) {
+        $('div.save').slideDown('slow');
+      } else {
+        $('div.save').slideUp('slow');
+      }
+    };
+
+    $('tr.editable td').click(assignStore);
+
+    $('div.save').click(function (e) {
+      var q = {};
+      for (var i=0; i<changes.length; i++) {
+        var key = changes[i][0];
+        var value = changes[i][1];
+        if (key == 'reset') {
+          if (q.reset === undefined) {
+            q.reset = [];
+          }
+          q.reset.push(value);
+        } else {
+          q[key] = value;
+        }
+      }
+      window.location = '/assign?'+$.param(q);
+    });
+
+    function toggleAction(e) {
+      var b = $(this);
+      var class = b.attr('class');
+      var store = b.closest('tr').attr('id');
+      if (b.data('doit')) {
+        b.data('doit', false);
+        if (class == 'reset') {
+          removeChange(class, store);
+        } else {
+          removeReport(store);
+        }
+      } else {
+        b.data('doit', true);
+        if (class == 'reset') {
+          changes.push([class, store]);
+        } else {
+          reports.push(store);
+        }
+      }
+
+      if (changes.length !== 0) {
+        $('div.save').slideDown('slow');
+      } else {
+        $('div.save').slideUp('slow');
+      }
+
+      if (reports.length !== 0) {
+        $('div.reports').slideDown('slow');
+      } else {
+        $('div.reports').slideUp('slow');
+      }
+
+      e.preventDefault();
+    }
+
+    $('tbody tr:not(.editable) div.storeinfo').hover(function (e) {
+      var div = $(this).children('div.actions');
+      if (div.children('a.reset').length === 0) {
+        var reset = $('<a href="#" title="Перевірити ще раз" class="reset"></a>');
+        div.append(reset);
+        reset.click(toggleAction);
+      }
+      if (div.children('a.report').length === 0) {
+        var report = $('<a href="#" title="Згенерувати звіт" class="report"></a>');
+        div.append(report);
+        report.click(toggleAction);
+      }
+    }, function (e) {
+      var div = $(this).children('div.actions');
+      var reset = div.children('a.reset');
+      if (!reset.data('doit')) {
+        reset.remove();
+      }
+      var report = div.children('a.report');
+      if (!report.data('doit')) {
+        report.remove();
+      }
+    });
+
+    $('div.reports').click(function (e) {
+      var q = {};
+      for (var i=0; i<reports.length; i++) {
+        var value = reports[i];
+        if (q.report === undefined) {
+            q.report = [];
+        }
+        q.report.push(value);
+      }
+      window.location = '/report?'+$.param(q);
+    });
+
+    $('#accordion p').hide();
+    $('#accordion h3').click(function (e) {
+        $(this).next().toggle();
+        $(this).toggleClass('active');
+    });
+
+  });
+</script>
+{% endblock %}
+
+{% block heading %}<a href="/">Перевірка торгових точок</a>{% endblock %}
+
+{% block content %}
+  <p>
+    На цій сторінці Ви можете подивитись статус існуючих перевірок торгових 
+    точок, закріпити ще не перевірені точки за певними регіональними 
+    менеджерами та згенерувати звіт.
+  </p>
+  <div id="accordion">
+    <h3>Призначення або перепризначення перевірки <span>(клацніть щоб розгорнути)</span></h3>
+    <p>
+      Клацніть на пусту комірку в рядку із неперевіреною або не повністю 
+      перевіреною торговою точкою і вона підсвітиться червоним кольором та ця
+      зміна буде додана до списку змін. Ще раз клацніть на цю комірку, щоб 
+      відмінити зміну. Якщо список змін не є пустим, то нижче таблиці з'явиться 
+      кнопка "Зберегти зміни", клацніть на неї.
+    <p>
+    <h3>Генерація звіту по перевірці <span>(клацніть щоб розгорнути)</span></h3>
+    <p>
+      <span class="note">Увага! Звіт генерується лише для повністю перевірених торгових точок.</span><br />
+      Наведіть курсор на комірку із назвою торгової точки. З'являться дві іконки, 
+      клацніть на праву (на ній зображений принтер), щоб додати торгову точку до 
+      списку точок для генерації звіту. Клацніть ще раз, щоб вилучити торгову
+      точку із цього списку. Якщо список не є пустим, то нижче таблиці з'явиться 
+      кнопка "Згенерувати звіт", клацніть на неї щоб отримати PDF документ із звітом.
+    </p>
+    <h3>Повторне призначення перевірки <span>(клацніть щоб розгорнути)</span></h3>
+    <p>
+      <span class="note">Увага! Повторно призначити перевірку можна лише для 
+        повністю перевірених торгових точок.
+      </span><br />
+      Наведіть курсор на комірку із назвою торгової точки. З'являться дві іконки, 
+      клацніть на ліву (на ній зображена закручена стрілка), щоб додати торгову 
+      точку до списку на повторну перевірку. Клацніть ще раз, щоб вилучити торгову
+      точку із цього списку. Якщо список не є пустим, то нижче таблиці з'явиться 
+      кнопка "Зберегти зміни", клацніть на неї.
+    </p>
+  </div>
+  <table id="assignments">
+    <thead>
+      <tr>
+        <th></th>
+        {% for user in users %}
+        <th>{{ user.username }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for store, user, progress in stores %}
+      {% ifequal progress 100 %}
+      <tr id="store{{ store.pk }}">
+      {% else %}
+      <tr class="editable" id="store{{ store.pk }}">
+      {% endifequal %}
+        <th>
+          <div class="storeinfo">
+            <div class="actions"></div>
+            <div>{{ store.name }}</div>
+            <div class="address">{{ store.address }}</div>
+          </div>
+        </th>
+        {% for u in users %}
+          {% ifequal u.username user %}
+            {% ifequal progress 100 %}
+            <td id="user{{ u.pk }}" class="assigned checked"></td>
+            {% else %}
+            <td id="user{{ u.pk }}" class="assigned">
+              <div class="progress checked" style="width: {{ progress }}%; {% ifequal progress 0 %}border-right: none;{% endifequal %}"></div>
+            </td>
+            {% endifequal %}
+          {% else %}
+          <td id="user{{ u.pk }}"></td>
+          {% endifequal %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="save">Зберегти зміни</div>
+  <div class="reports">Згенерувати звіт</div>
+  <div class="legend">
+    <span class="assigned">закріплена</span><span class="checked">перевірена</span><span class="new">нова</span>
+  </div>
+{% endblock %}

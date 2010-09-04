@@ -1,0 +1,107 @@
+{% extends "storecheck/mobile/base.html" %}
+
+{% block styles %}
+<style type="text/css">
+
+body > ul.addresses > li {
+    font-size: 14px;
+}
+
+body > ul.addresses > li > a {
+    padding-left: 54px;
+    padding-right: 40px;
+    min-height: 34px;
+}
+
+ul.addresses li .digg-count {
+    display: block;
+    position: absolute;
+    margin: 0;
+    left: 6px;
+    top: 7px;
+    text-align: center;
+    font-size: 110%;
+    letter-spacing: -0.07em;
+    color: #93883F;
+    font-weight: bold;
+    text-decoration: none;
+    width: 36px;
+    height: 30px;
+    padding: 7px 0 0 0;
+    background: none;
+}
+
+ul.addresses li.checked .digg-count {
+  background: url(/static/img/Apply.png) no-repeat;
+}
+
+h2 {
+    margin: 10px;
+    color: slateblue;
+}
+
+p {
+    margin: 10px;
+}
+
+body > ul.info > li {
+  font-size: 16px;
+}
+
+ul.info > li > span {
+  color: #666;
+  display: block;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+  <ul id="home" title="Пошук" selected="true">
+      <li><a href="#bylocation">За геогафічною ознакою</a></li>
+      <li><a href="#byserial">За номерами камер</a></li>
+  </ul>
+
+  <div id="bylocation" title="За географічною ознакою" class="panel">
+    <form class="panel" action="/m/addresses" method="get" selected="true">
+      <h2>Адреса торгової точки</h2>
+      <fieldset>
+          <div class="row">
+              <label>Місто</label>
+              <input type="text" name="city" value=""/>
+          </div>
+          <div class="row">
+              <label>Район</label>
+              <input type="text" name="district" value=""/>
+          </div>
+          <div class="row">
+              <label>Вулиця</label>
+              <input type="text" name="street" value=""/>
+          </div>
+          <div class="row">
+              <label>Номер будинку</label>
+              <input type="text" name="building" value=""/>
+          </div>
+      </fieldset>
+      <a class="whiteButton" type="submit" href="#">Пошук</a>
+    </form>
+  </div>
+
+  <div id="byserial" title="За номерами камер" class="panel">
+    <form class="panel" action="/m/addresses" method="get" selected="true">
+      <h2>Серійні номери</h2>
+      <fieldset>
+          <div class="row">
+              <input type="text" name="serial" value=""/>
+          </div>
+          <div class="row">
+              <input type="text" name="serial" value=""/>
+          </div>
+          <div class="row">
+              <input type="text" name="serial" value=""/>
+          </div>
+      </fieldset>
+      <a class="whiteButton" type="submit" href="#">Пошук</a>
+    </form>
+  </div>
+{% endblock %}

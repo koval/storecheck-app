@@ -1,0 +1,223 @@
+{% extends "storecheck/base.html" %}
+
+{% block title %}Адреси торгових точок{% endblock %}
+
+{% block styles %}
+<style type="text/css">
+a:active {
+  outline: none;
+}
+a:focus {
+  -moz-outline-style: none;
+}
+#tabs_container ul.tabs {
+  list-style: none;
+  border-bottom: 1px solid #C9E8F3;
+  height: 27px;
+  margin: 0;
+  padding-left: 0px;
+}
+#tabs_container ul.tabs li {
+  float: left;
+}
+
+#tabs_container ul.tabs li a {
+  padding: 3px 10px;
+  display: block;
+  border: 1px solid #C9E8F3;
+  border-bottom: 0;
+  color: #677e70;
+  font-weight: bold;
+  margin-right: 4px;
+  text-decoration: none;
+  background-color: #C9E8F3;
+  -moz-border-radius-topleft: 10px;
+  -moz-border-radius-topright: 10px;
+}
+#tabs_container ul.tabs li.active a {
+  background-color: #FAFDFE;
+  padding-top: 4px;
+  color:#2c353a;
+}
+div.tab_contents_container {
+  background-color: #FAFDFE;
+  border: 1px solid #C9E8F3;
+  border-top: none;
+  padding: 20px;
+}
+div.tab_contents {
+  display: none;
+}
+div.tab_contents_active {
+  display: block;
+}
+div.clear {
+  clear: both;
+}
+tr.checked td.mark {
+  background: url("/static/img/Apply.png") no-repeat center;
+  width: 10px;
+}
+
+div.legend {
+  text-align: center;
+  margin-top: 10px;
+}
+div.legend img {
+  vertical-align: bottom;
+}
+
+div.empty {
+  text-align: center; 
+  font-weight: bold; 
+  font-size: 125%; 
+  color: #3C8BB9;
+}
+.note {
+  font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+$(document).ready(function(){
+
+ // Set up a listener so that when anything with a class of 'tab' 
+ // is clicked, this function is run.
+ $('.tab').click(function (e) {
+
+  // Remove the 'active' class from the active tab.
+  $('#tabs_container > .tabs > li.active')
+          .removeClass('active');
+
+  // Add the 'active' class to the clicked tab.
+  $(this).parent().addClass('active');
+
+  // Remove the 'tab_contents_active' class from the visible tab contents.
+  $('#tabs_container > .tab_contents_container > div.tab_contents_active')
+          .removeClass('tab_contents_active');
+
+  // Add the 'tab_contents_active' class to the associated tab contents.
+  $(this.rel).addClass('tab_contents_active');
+  e.preventDefault();
+ });
+});
+</script>
+{% endblock %}
+
+{% block heading %}<a href="/">Перевірка торгових точок</a> → <a href="/addresses">Адреси</a>{% endblock %}
+
+{% block content %}
+<p>
+  На цій сторінці наведений список морозильних камер та торгових точок, які ви
+  маєте перевірити. Клацнувши на серійний номер морозильної камери або назву 
+  торгової точки Ви зможете перейти на сторінку перевірки інформації про неї.
+</p>
+
+{% if query.search %}
+<p class="note">
+  Увага! Можливо, це не повний список торгових точок для перевірки, оскільки 
+  він відфільтрований відповідно до Вашого пошукового запиту з попередньої сторінки.
+</p>
+{% endif %}
+
+<div id="tabs_container">
+  <!-- These are the tabs -->
+  <ul class="tabs">
+    {% ifequal query.type "serial" %}
+    <li class="active">
+    {% else %}
+    <li>
+    {% endifequal %}
+      <a href="#refrigerators" rel="#refrigerators" class="tab">Морозильні камери</a>
+    </li>
+    {% ifequal query.type "location" %}
+    <li class="active">
+    {% else %}
+    <li>
+    {% endifequal %}
+      <a href="#stores" rel="#stores" class="tab">Торгові точки</a>
+    </li>
+  </ul>
+
+  <!-- This is used so the contents don't appear to the 
+        right of the tabs -->
+  <div class="clear"></div>
+
+  <!-- This is a div that hold all the tabbed contents -->
+  <div class="tab_contents_container">
+    {% ifequal query.type "serial" %}
+    <div id="refrigerators" class="tab_contents tab_contents_active">
+    {% else %}
+    <div id="refrigerators" class="tab_contents">
+    {% endifequal %}
+      {% if refrigerators %}
+      <table>
+        <tr>
+          <th></th>
+          <th>Серійний номер</th>
+          <th>Адреса</th>
+        </tr>
+        {% for assignment, ref in refrigerators %}
+          {% if assignment.checked %}
+          <tr class="checked">
+          {% else %}
+          <tr>
+          {% endif %}
+            <td class="mark"></td>
+            <td><a href="/check/{{ ref.store.pk }}/?sn={{ ref.serial_number }}">{{ ref.serial_number }}</a></td>
+            <td>{{ ref.store.address }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+      <div class="legend">
+        <img src="/static/img/Apply.png" title="Перевірена" /> - морозильна 
+        камера перевірена
+      </div>
+      {% else %}
+      <div class="empty">Вам не призначено ніяких морозильних камер.</div>
+      {% endif %}
+    </div>
+
+    {% ifequal query.type "location" %}
+    <div id="stores" class="tab_contents tab_contents_active">
+    {% else %}
+    <div id="stores" class="tab_contents">
+    {% endifequal %}
+      {% if stores %}
+      <table>
+        <tr>
+          <th></th>
+          <th>Адреса</th>
+          <th>Назва</th>
+          <th>Серійні номери камер</th>
+        </tr>
+        {% for assignment, store in stores %}
+          {% if assignment.checked %}
+          <tr class="checked">
+          {% else %}
+          <tr>
+          {% endif %}
+            <td class="mark"></td>
+            <td>{{ store.address }}</td>
+            <td><a href="/check/{{ store.pk }}">{{ store.name }}</a></td>
+            <td>
+            {% for ref in store.refrigerator_set.all %}
+              <a href="/check/{{ store.pk }}/?sn={{ ref.serial_number }}">{{ ref.serial_number }}</a>
+            {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+      <div class="legend">
+        <img src="/static/img/Apply.png" title="Перевірена" /> - торгова точка
+        перевірена
+      </div>
+      {% else %}
+      <div class="empty">Вам не призначено ніяких торгових точок.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "storecheck/base.html" %}
+
+{% block title %}Пошук торгових точок{% endblock %}
+
+{% block scripts %}
+  <script type='text/javascript' src='/static/jquery.bgiframe.min.js'></script>
+  <script type='text/javascript' src='/static/jquery.ajaxQueue.js'></script>
+  <script type='text/javascript' src='/static/jquery.autocomplete.js'></script>
+  <link rel="stylesheet" type="text/css" href="/static/jquery.autocomplete.css" />
+  <script type="text/javascript">
+    $(document).ready(function(){
+//         var lastBlock=$('#byroute');
+      var lastBlock=$('#bylocation')
+      $('#byserial').hide();
+
+      $("h3").click(
+        function(){
+          if (lastBlock) {
+            $(lastBlock).hide();
+            $(lastBlock).prev().removeClass('active');
+          }
+          $(this).addClass('active');
+          lastBlock = $(this).next();
+          lastBlock.toggle();
+        }
+      );
+
+      function newSerialNumber(e) {
+        $(this).parent().after('<p><input disabled="disabled" type="text" name="serial" style="margin-left: 154px"/><span id="newserial" /></p>');
+        $(this).prev().removeAttr('disabled');
+        $(this).remove();
+        $('#newserial').prev().autocomplete('/autocomplete/sn', {
+          autoFill: true, 
+          matchCase: false, 
+          extraParams: {serials: currentSerials},
+        });
+        $('#newserial').click(newSerialNumber);
+      }
+
+      $('#newserial').click(
+        newSerialNumber
+      );
+
+      // autocomplete functionality
+      function currentCity() {
+        return $('#city').val();;
+      }
+
+      function currentDisrict() {
+        return $('#district').val();
+      }
+
+      function currentStreet() {
+        return $('#street').val();
+      }
+
+      function currentBuilding() {
+        return $('#building').val();
+      }
+
+      var ac_fields = ['city', 'district', 'street', 'building']
+      for (var i=0; i<ac_fields.length; i++) {
+        $("#"+ac_fields[i]).autocomplete('/autocomplete/address', {
+          autoFill: true, 
+          matchCase: false, 
+          extraParams: {
+            field: ac_fields[i],
+            city: currentCity,
+            district: currentDisrict,
+            street: currentStreet,
+            building: currentBuilding,
+          }
+        });
+      }
+
+      function currentSerials() {
+        var sn = [];
+        $('input[name="serial"]').each(function (i, e) { 
+          var value = $(e).val();
+          if (value) { 
+            sn.push(value);
+          }
+        });
+        return sn;
+      }
+
+      $('input[name="serial"]').autocomplete('/autocomplete/sn', {
+        autoFill: true, 
+        matchCase: false, 
+        extraParams: {serials: currentSerials},
+      });
+
+    });
+  </script>
+{% endblock %}
+
+{% block styles %}
+  <style type="text/css">
+    #accordion {
+      margin-left: 40px;
+      margin-right: 40px;
+    }
+    #accordion h3 {
+      cursor: pointer;
+    }
+    #accordion h3 span {
+      font-weight: normal;
+      font-size: 80%;
+      font-style: italic;
+    }
+    #accordion h3.active {
+      padding: 5px 5px 5px 15px;
+      background: url("/static/img/highlight.gif");
+    }
+    #accordion h3.active span {
+      visibility: hidden;
+    }
+    form {
+      -moz-border-radius: 10px;
+      padding: 20px;
+      background-color: #FAFDFE;
+      border: 1px solid #C9E8F3;
+    }
+    form p {
+      border-bottom: 1px dotted #ccc;
+      margin: 5px;
+      padding-bottom: 5px;
+    }
+    form p span {
+      color: #777777;
+      font-size: 80%;
+      font-style: italic;
+      padding-left: 10px;
+    }
+    form p:last-child {
+      border: none;
+    }
+    #newserial {
+      background: url("/static/img/add.png");
+      display: inline-block;
+      height: 24px;
+      width: 24px;
+      vertical-align: top;
+      margin-left: 5px;
+      cursor: pointer;
+      padding-left: 0px;
+    }
+    input[type="submit"] {
+      margin-left: 153px;
+      width: 185px;
+    }
+    label {
+      width: 130px;
+      display: inline-block;
+      padding: 0 10px;
+    }
+  </style>
+{% endblock %}
+
+{% block heading %}<a href="/">Перевірка торгових точок</a>{% endblock %}
+
+{% block content %}
+  <p>
+    На цій сторінці ви можете здійснити пошук торгових точок для перевірки, які
+    за були закріплені за вами керівництвом.
+  </p>
+  <p>
+    Виберіть один із можливих типів пошуку торгових точок для перевірки та 
+    заповніть потрібні поля, щоб отримати адреси торгових точок та морозильних 
+    камер. Або перегляньте <a style="font-weight: bold;" href="/addresses">повний список</a> торгових точок 
+    та морозильних камер, які закріплені за Вами.
+  </p>
+
+  <div id="accordion">
+
+<!--    <h3 class="active">за номером маршруту <span>(клацніть для вибору)</span></h3>
+    <form action="/addresses" method="POST" id="byroute">
+      <p>
+        <label for="route">Номер маршруту</label>
+        <input type="text" name="route" id="route" />
+      </p>
+      <p>
+        <input type="submit" name="check" value="Перевірити" />
+      </p>
+    </form>-->
+
+    <h3 class="active">за георгафічною ознакою <span>(клацніть для вибору)</span></h3>
+    <form action="/addresses" method="POST" id="bylocation">
+      {% csrf_token %}
+      <input type="hidden" name="criterion" value="location" />
+      <p>
+        <label for="city">Населений пункт</label>
+        <input type="text" name="city" id="city" />
+        <span>наприклад, Львів</span>
+      </p>
+      <p>
+        <label for="district">Район міста</label>
+        <input type="text" name="district" id="district" />
+        <span>наприклад, Залізничний</span>
+      </p>
+      <p>
+        <label for="street">Вулиця</label>
+        <input type="text" name="street" id="street" />
+        <span>наприклад, Виговського</span>
+      </p>
+      <p>
+        <label for="building">Номер будинку</label>
+        <input type="text" name="building" id="building" />
+        <span>наприклад, 22</span>
+      </p>
+      <p>
+        <input type="submit" name="check" value="Перевірити" />
+      </p>
+    </form>
+
+    <h3>за номерами камер <span>(клацніть для вибору)</span></h3>
+    <form action="/addresses" method="POST" id="byserial">
+      {% csrf_token %}
+      <p>
+        <label for="serial">Серійні номери</label>
+        <input type="text" name="serial" id="serial" />
+        <span>наприклад, 325348</span>
+      </p>
+      <p>
+        <input type="text" name="serial" disabled="disabled" style="margin-left: 154px" />
+        <span id="newserial"></span>
+      </p>
+      <p>
+        <input type="submit" name="check" value="Перевірити" />
+      </p>
+    </form>
+  </div>
+{% endblock %}
