@@ -1,0 +1,5 @@
+Storecheck
+==========
+
+Django powered web application for performing store checks. It was my course project. 
+Tested with Django 1.2.1.
